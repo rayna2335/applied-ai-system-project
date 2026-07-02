@@ -2,10 +2,23 @@
 
 ## 1. System Design
 
+This app is primarly used to track your pet's tasks that can plan out walks, play time, dinner, grooming, and medication times.
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
+
+    #### brainstorm objects
+
+    - The main object: pet, owner, task, schedule
+    - Pet can have an attribiute of pets name, weight, age, owner name, and whether or not the pet is taking medication. With method of is_walking(), is_eating(), is_playing(),took_medicine(), isPlaying, isGroomed()
+
+    - Ower class can have attributes of first and last name,pet name, owner availability. With methods of isAvailable()
+
+    - Task class can have attributes of the name, duration,priority level, and if the task is completed or not. With. methods of markDone()
+
+    - Schedule class can have attributes with a task name, date, and owner with methods of add_task() and total_time()
 
 **b. Design changes**
 

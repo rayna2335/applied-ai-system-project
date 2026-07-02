@@ -92,3 +92,14 @@ Describe your app in numbered steps so a reader can follow along without watchin
 5. <!-- Add more steps as needed -->
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+
+
+
+# STEP 1: 3 core actions
+
+The User should be able to:
+
+1. add pet information (name, weight, age, owner, behavior)
+2. Track pets actions (feed time, walk schedule)
+3. Track owners schedule/plan
+4. add Pets health information (meds, appointments)
