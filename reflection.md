@@ -12,18 +12,27 @@ This app is primarly used to track your pet's tasks that can plan out walks, pla
     #### brainstorm objects
 
     - The main object: pet, owner, task, schedule
-    - Pet can have an attribiute of pets name, weight, age, owner name, and whether or not the pet is taking medication. With method of is_walking(), is_eating(), is_playing(),took_medicine(), isPlaying, isGroomed()
 
-    - Ower class can have attributes of first and last name,pet name, owner availability. With methods of isAvailable()
+    - Pet can have an attribiute of pets name, weight, age, owner name, and whether or not the pet is taking medication. With method of is_walking(), is_eating(), is_playing(),took_medicine(), isPlaying, isGroomed().
 
-    - Task class can have attributes of the name, duration,priority level, and if the task is completed or not. With. methods of markDone()
+    - Ower class can have attributes of first and last name, pet name, and owner availability. With methods of isAvailable() to see when the owner is available to make schedule.
 
-    - Schedule class can have attributes with a task name, date, and owner with methods of add_task() and total_time()
+    - Task class can have attributes of the name, duration,priority level, and if the task is completed or not with methods of markDone().
+
+    - Schedule class can have attributes with a task name, date, and owner with methods of add_task() and total_time() it takes to do each of those tasks.
 
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+
+    #### change log
+    - Added schedule time to be able to see if tasks acturally fits in the day/schedule.
+    - The old design had no link to the pet a plan was for. Since this is a pet-care app, the Schedule now references the Pet it belongs to.
+
+    - added priority_rank() and a PRIORITY_RANK map to see the priority level, and mapped out the scheduler to see which tasks are more important then the other. 
+
+    - added build_plan() to be able to produce a daily plan and explain why tasks were added or skipped and why.
 
 ---
 

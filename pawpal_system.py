@@ -38,18 +38,21 @@ class Pet:
 
 
 class Owner:
-    def __init__(self, first_name, last_name, pet_name, availability):
+    def __init__(self, first_name, last_name, pet_name, available_minutes):
         self.first_name = first_name
         self.last_name = last_name
         self.pet_name = pet_name
-        self.availability = availability
+        self.available_minutes = available_minutes  # how many minutes the owner has today
 
     def is_available(self):
-        # TODO: return True if the owner has time available
-        pass
+        # Owner has time if they have any minutes free
+        return self.available_minutes > 0
 
 
 class Task:
+    # maps priority text to a number so tasks can be sorted (higher = more important)
+    PRIORITY_RANK = {"high": 3, "medium": 2, "low": 1}
+
     def __init__(self, name, duration, priority, completed=False):
         self.name = name
         self.duration = duration
@@ -57,21 +60,43 @@ class Task:
         self.completed = completed
 
     def mark_done(self):
-        # TODO: set self.completed to True
-        pass
+        self.completed = True
+
+    def priority_rank(self):
+        # convert the priority string into a number for sorting
+        return self.PRIORITY_RANK.get(self.priority, 0)
 
 
 class Schedule:
-    def __init__(self, name, date, owner):
+    def __init__(self, name, date, owner, pet):
         self.name = name
         self.date = date
         self.owner = owner
-        self.tasks = []  # list of Task objects
+        self.pet = pet          # which pet this plan is for
+        self.tasks = []         # list of Task objects
+        self.reasons = []       # notes on why each task was/wasn't added (for explain())
 
     def add_task(self, task):
-        # TODO: add a Task to self.tasks
-        pass
+        self.tasks.append(task)
 
     def total_time(self):
-        # TODO: return the sum of durations of all tasks
-        pass
+        return sum(task.duration for task in self.tasks)
+
+    def build_plan(self, available_tasks):
+        """Pick tasks by priority until the owner runs out of time."""
+        self.tasks = []
+        self.reasons = []
+        # highest priority first
+        for task in sorted(available_tasks, key=lambda t: t.priority_rank(), reverse=True):
+            if self.total_time() + task.duration <= self.owner.available_minutes:
+                self.add_task(task)
+                self.reasons.append(f"Added '{task.name}' ({task.priority} priority, {task.duration} min).")
+            else:
+                self.reasons.append(f"Skipped '{task.name}' — not enough time left.")
+        return self.tasks
+
+    def explain(self):
+        """Return a human-readable reason for why this plan was chosen."""
+        header = (f"Plan for {self.pet.name} on {self.date} — "
+                  f"{self.total_time()} of {self.owner.available_minutes} min used.")
+        return header + "\n" + "\n".join(self.reasons)
