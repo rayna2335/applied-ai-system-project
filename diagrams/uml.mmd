@@ -1,15 +1,45 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
+    %% PawPal — pet care planning app
+    %% Classes based on the brainstorm in reflection.md
 
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Pet {
+        +str name
+        +float weight
+        +int age
+        +str owner_name
+        +bool on_medication
+        +is_walking() bool
+        +is_eating() bool
+        +is_playing() bool
+        +took_medicine() bool
+        +is_groomed() bool
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Owner {
+        +str first_name
+        +str last_name
+        +str pet_name
+        +bool availability
+        +is_available() bool
     }
 
-    ClassName --> AnotherClass : relationship
+    class Task {
+        +str name
+        +int duration
+        +str priority
+        +bool completed
+        +mark_done() void
+    }
+
+    class Schedule {
+        +str name
+        +str date
+        +Owner owner
+        +List~Task~ tasks
+        +add_task(task) void
+        +total_time() int
+    }
+
+    Owner "1" --> "1" Pet : cares for
+    Schedule "1" --> "*" Task : contains
+    Schedule "1" --> "1" Owner : belongs to
