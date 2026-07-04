@@ -67,8 +67,13 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
-```
+Today's Schedule
+----------------------------
+Daily plan for Cookie (Holland lop):
+  08:00 — Morning Walk (30 min) [priority: high]
+  09:00 — Feed Breakfast (10 min) [priority: high]
+  10:00 — Playtime (20 min) [priority: medium]
+  ```
 
 ## 📐 Smarter Scheduling
 

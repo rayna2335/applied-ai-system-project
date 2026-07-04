@@ -9,94 +9,154 @@ Attributes are set up in each __init__; method bodies are left as stubs
 
 
 class Pet:
-    def __init__(self, name, weight, age, owner_name, on_medication):
+    def __init__(self, name, breed, weight, age, owner_name, on_medication):
+        """Initialize a pet with its details and default (all-false) status flags."""
         self.name = name
+        self.breed = breed
         self.weight = weight
         self.age = age
         self.owner_name = owner_name
         self.on_medication = on_medication
 
+        # current status
+        self.walking = False
+        self.eating = False
+        self.playing = False
+        self.medicine_taken = False
+        self.groomed = False
+
+        # list of tasks for this pet
+        self.tasks = []
+
     def is_walking(self):
-        # TODO: return True if the pet is currently on a walk
-        pass
+        """Return True if the pet is currently walking."""
+        return self.walking
 
     def is_eating(self):
-        # TODO: return True if the pet is currently eating
-        pass
+        """Return True if the pet is currently eating."""
+        return self.eating
 
     def is_playing(self):
-        # TODO: return True if the pet is currently playing
-        pass
+        """Return True if the pet is currently playing."""
+        return self.playing
 
     def took_medicine(self):
-        # TODO: return True if the pet has taken its medicine
-        pass
+        """Return True if the pet has taken its medicine."""
+        return self.medicine_taken
 
     def is_groomed(self):
-        # TODO: return True if the pet has been groomed
-        pass
+        """Return True if the pet has been groomed."""
+        return self.groomed
 
+    def add_task(self, task):
+        """Tag the task with this pet's name and add it to the pet's task list."""
+        task.pet_name = self.name
+        self.tasks.append(task)
 
 class Owner:
-    def __init__(self, first_name, last_name, pet_name, available_minutes):
+    def __init__(self, first_name, last_name, available_minutes):
+        """Initialize an owner with their name, available minutes, and empty pet list."""
         self.first_name = first_name
         self.last_name = last_name
-        self.pet_name = pet_name
-        self.available_minutes = available_minutes  # how many minutes the owner has today
+        self.available_minutes = available_minutes
+        self.pets = []
 
     def is_available(self):
+        """Return True if the owner has any free minutes available."""
         # Owner has time if they have any minutes free
         return self.available_minutes > 0
 
+    def add_pet(self, pet):
+        """Add a pet to this owner's list of pets."""
+        self.pets.append(pet)
+
+    def get_all_tasks(self):
+        """Return a combined list of tasks across all of the owner's pets."""
+        tasks = []
+        for pet in self.pets:
+            tasks.extend(pet.tasks)
+        return tasks
 
 class Task:
     # maps priority text to a number so tasks can be sorted (higher = more important)
     PRIORITY_RANK = {"high": 3, "medium": 2, "low": 1}
 
-    def __init__(self, name, duration, priority, completed=False):
+    def __init__(self, name, time, duration, priority, completed=False):
+        """Initialize a task with its name, time, duration, priority, and completion status."""
         self.name = name
+        self.time = time
         self.duration = duration
         self.priority = priority
         self.completed = completed
 
-    def mark_done(self):
+    def mark_complete(self):
+        """Mark this task as completed."""
         self.completed = True
 
     def priority_rank(self):
+        """Return the numeric rank of this task's priority for sorting."""
         # convert the priority string into a number for sorting
         return self.PRIORITY_RANK.get(self.priority, 0)
 
 
 class Schedule:
-    def __init__(self, name, date, owner, pet):
-        self.name = name
-        self.date = date
+    def __init__(self, owner, pet):
+        """Initialize a schedule for a given owner and pet with empty task and reason lists."""
         self.owner = owner
         self.pet = pet          # which pet this plan is for
         self.tasks = []         # list of Task objects
         self.reasons = []       # notes on why each task was/wasn't added (for explain())
 
     def add_task(self, task):
+        """Add a task to this schedule."""
         self.tasks.append(task)
 
     def total_time(self):
+        """Return the total duration in minutes of all scheduled tasks."""
         return sum(task.duration for task in self.tasks)
 
     def build_plan(self, available_tasks):
-        """Pick tasks by priority until the owner runs out of time."""
+        """Build the schedule by adding tasks in priority order that fit the owner's time."""
         self.tasks = []
         self.reasons = []
-        # highest priority first
-        for task in sorted(available_tasks, key=lambda t: t.priority_rank(), reverse=True):
+
+        for task in sorted(
+            available_tasks,
+            key=lambda t: t.priority_rank(),
+            reverse=True
+        ):
             if self.total_time() + task.duration <= self.owner.available_minutes:
                 self.add_task(task)
-                self.reasons.append(f"Added '{task.name}' ({task.priority} priority, {task.duration} min).")
+                self.reasons.append(
+                    f"Added '{task.name}' for {task.pet_name} "
+                    f"({task.priority} priority, {task.duration} min)."
+                )
             else:
-                self.reasons.append(f"Skipped '{task.name}' — not enough time left.")
+                self.reasons.append(
+                    f"Skipped '{task.name}' for {task.pet_name} — not enough time left."
+                )
+
         return self.tasks
 
     def explain(self):
-        """Return a human-readable reason for why this plan was chosen."""
-        header = (f"Plan for {self.pet.name} on {self.date} — "
-                  f"{self.total_time()} of {self.owner.available_minutes} min used.")
-        return header + "\n" + "\n".join(self.reasons)
+        """Return a formatted text summary of the pet's scheduled tasks."""
+        header = f"Daily plan for {self.pet.name} ({self.pet.breed}):"
+
+        lines = []
+        for task in self.tasks:
+            lines.append(
+                f"  {task.time} — {task.name} "
+                f"({task.duration} min) "
+                f"[priority: {task.priority}]"
+            )
+
+        return header + "\n" + "\n".join(lines)
+
+    def display_schedule(self):
+        """Print each scheduled task with its duration and priority."""
+        for task in self.tasks:
+            print(f"{task.name} ({task.duration} min) - {task.priority}")
+
+
+# Daily plan for Biscuit (Golden Retriever):
+#   08:00 — Morning walk (30 min) [priority: high]
