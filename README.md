@@ -62,6 +62,10 @@ pytest
 
 # Run with coverage:
 pytest --cov
+
+# Run the tests:
+python3 -m pytest
+'''The test covered adding a test to a pet increases count by 1, sorts tasks by time, tests for duplicate times.'''
 ```
 
 Sample test output:

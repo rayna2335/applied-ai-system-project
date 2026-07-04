@@ -242,3 +242,8 @@ class Schedule:
 
 # Daily plan for Biscuit (Golden Retriever):
 #   08:00 — Morning walk (30 min) [priority: high]
+
+#edge cases
+"""
+1. 
+"""
