@@ -1,6 +1,59 @@
 import streamlit as st
+from pawpal_system import Owner, Pet, Task, Schedule
+
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
+
+
+# Create Owner only once
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(
+        first_name="Rayna",
+        last_name="Maruyama",
+        available_minutes=120
+    )
+
+if st.session_state.owner.pets:
+    pet_names = [pet.name for pet in st.session_state.owner.pets]
+
+    selected_pet_name = st.selectbox(
+        "Choose a pet",
+        pet_names
+    )
+
+    selected_pet = next(
+        pet for pet in st.session_state.owner.pets
+        if pet.name == selected_pet_name
+    )
+else:
+    st.warning("Add a pet first.")
+    selected_pet = None
+
+task_time = st.text_input("Task Time", value="08:00")
+
+pet_name = st.text_input("Pet Name")
+breed = st.text_input("Breed")
+
+if st.button("Add Pet"):
+    pet = Pet(
+        name=pet_name,
+        breed=breed,
+        weight=10,
+        age=2,
+        owner_name="Rayna Maruyama",
+        on_medication=False
+    )
+
+    st.session_state.owner.add_pet(pet)
+    st.success(f"{pet_name} added!")
+
+
+
+st.header("My Pets")
+
+for pet in st.session_state.owner.pets:
+    st.write(f"• {pet.name} ({pet.breed})")
+
 
 st.title("🐾 PawPal+")
 
@@ -56,32 +109,51 @@ with col2:
 with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
-if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
+if st.button("Add task") and selected_pet:
+
+    task = Task(
+        name=task_title,
+        time=task_time,
+        duration=int(duration),
+        priority=priority
     )
 
-if st.session_state.tasks:
-    st.write("Current tasks:")
-    st.table(st.session_state.tasks)
-else:
-    st.info("No tasks yet. Add one above.")
+    selected_pet.add_task(task)
 
+    st.success(
+        f"Added '{task_title}' to {selected_pet.name}"
+    )
+
+if st.session_state.owner.get_all_tasks():
+
+    rows = []
+
+    for task in st.session_state.owner.get_all_tasks():
+        rows.append({
+            "Pet": task.pet_name,
+            "Time": task.time,
+            "Task": task.name,
+            "Duration": task.duration,
+            "Priority": task.priority
+        })
+
+    st.table(rows)
+    
 st.divider()
 
 st.subheader("Build Schedule")
 st.caption("This button should call your scheduling logic once you implement it.")
 
 if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+
+    if selected_pet:
+        schedule = Schedule(
+            owner=st.session_state.owner,
+            pet=selected_pet
+        )
+
+        schedule.build_plan(
+            st.session_state.owner.get_all_tasks()
+        )
+
+        st.text(schedule.explain())

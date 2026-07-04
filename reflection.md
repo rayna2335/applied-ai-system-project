@@ -48,6 +48,8 @@ This app is primarly used to track your pet's tasks that can plan out walks, pla
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+One tradeoff that my schdeuler makes are that my Scheduler uses simple detection algorithm that checks only if two tasks that starts at the same time. It doesnt necessarily check the schedule if it overlapped with other tasks. I chose this approach because it makes scheduling logic application simple for a small petcare app.
+
 ---
 
 ## 3. AI Collaboration

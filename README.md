@@ -85,6 +85,10 @@ Daily plan for Cookie (Holland lop):
 | Filtering | | e.g., skip tasks if time runs out |
 | Conflict handling | | e.g., overlapping time slots |
 | Recurring tasks | | e.g., daily vs. weekly |
+| Sorting | Schedule.sort_by_time() | Sorts tasks by HH:MM time
+| Filtering | Schedule.filter_by_pet() and Schedule.filter_by_completion() | Filters tasks by pet and tasks that are completed.
+| Conflict detection | Schedule.detect_conflicts() | Detects tasks scheduled at the same time.
+| Recurring task | Task.create_next_occurance() | Automatically creates daily or weekly tasks.
 
 ## 📸 Demo Walkthrough
 
