@@ -65,7 +65,25 @@ pytest --cov
 
 # Run the tests:
 python3 -m pytest
-'''The test covered adding a test to a pet increases count by 1, sorts tasks by time, tests for duplicate times.'''
+
+'''
+The test covered adding a test to a pet increases count by 1, sorts tasks by time, tests for duplicate times.
+
+Terminal output: 
+
+============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/raynamaruyama/codepath week4 project/ai110-module2show-pawpal-starter
+plugins: anyio-4.14.1
+collected 6 items                                                                                                
+
+tests/test_pawpal.py ......                                                                                [100%]
+
+=============================================== 6 passed in 0.03s ================================================
+
+confidence level: 5
+
+'''
 ```
 
 Sample test output:
@@ -96,19 +114,63 @@ Daily plan for Cookie (Holland lop):
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+1. **`streamlit run app.py` to run the app**
+2. Enter your first and last name as a owner of your pets.
+3. Enter the available time you have today.
+4. Add your pets (see left dashboard to see the count of your pets added) with age, name, breed and weight. Check if the pet is on medication.
+5. Add pets tasks under **Add care tasks** with duration, name, time and priority level.
+6. Generate a daily plan according to those pets and tasks added to the list.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+Example workflow: add a pet → schedule a task → view today's plan
+
+1. Under **Available time**, enter `2` hours `0` minutes. PawPal+ confirms that the total number of time you have for the day (120 minutes)
+2. Under **Add a pet**, enter name `Cookie`, breed `Holland Lop`, weight `4` lbs, age `2`, and check **On medication**. Click **Add pet**. Then the app will add your pet and the sidebar pet count goes up by 1.
+3. Under **Add care tasks**, select `Cookie`, then add:
+   - Feed Breakfast, 08:00, 10 min, priority high
+   - Morning Walk, 09:00, 30 min, priority high
+   - Playtime, 10:00, 20 min, priority medium
+
+   The running total shows 60 min needed / 120 available / 60 remaining
+
+4. Click **Generate schedule**. PawPal+ checks for conflicts, keeps the highest-priority tasks that fit your 120-minute budget, and displays the daily plan sorted by time.
+
+
+| Key Sceduler behaviors | Method(s) | What it does |
+|------------------------|-----------|--------------|
+| Building plan | build_plan() | sorts tasks by priority and adds each task. only if its duration still fits the owners available_minutes. |
+| Sorting by time | sort_by_time() | returns scheduled tasks ordered by HH:MM start time. |
+|Conflict detection | detect_conflicts() | If there are any missed prompt it will warn the user. |
+
+
+### Sample CLI output (`python3 main.py`)
+
+```text
+Today's Schedule
+----------------------------
+Daily plan for Rayna Maruyama:
+  08:00 — Feed Breakfast for Cookie (10 min) [priority: high]
+  09:00 — Morning Walk for pansy (30 min) [priority: high]
+  08:00 — Playtime for Cookie (20 min) [priority: medium]
+
+Tasks sorted by time:
+08:00 Feed Breakfast
+08:00 Playtime
+09:00 Morning Walk
+
+Incomplete tasks:
+Feed Breakfast
+Morning Walk
+Playtime
+
+Conflict Detection:
+Conflict: Feed Breakfast and Playtime both occur at 08:00
+```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
 
 
 
-# STEP 1: 3 core actions
+#  3 core actions
 
 The User should be able to:
 

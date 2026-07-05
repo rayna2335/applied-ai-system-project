@@ -1,0 +1,67 @@
+classDiagram
+    %% PawPal+ — pet care planning app
+    %% Final diagram, updated to match pawpal_system.py after the build.
+
+    class Pet {
+        +str name
+        +str breed
+        +float weight
+        +int age
+        +str owner_name
+        +bool on_medication
+        +bool walking
+        +bool eating
+        +bool playing
+        +bool medicine_taken
+        +bool groomed
+        +List~Task~ tasks
+        +is_walking() bool
+        +is_eating() bool
+        +is_playing() bool
+        +took_medicine() bool
+        +is_groomed() bool
+        +add_task(task) void
+        +filter_by_pet(pet_name) List~Task~
+    }
+
+    class Owner {
+        +str first_name
+        +str last_name
+        +int available_minutes
+        +List~Pet~ pets
+        +is_available() bool
+        +add_pet(pet) void
+        +get_all_tasks() List~Task~
+    }
+
+    class Task {
+        +dict PRIORITY_RANK
+        +str name
+        +str time
+        +int duration
+        +str priority
+        +str frequency
+        +bool completed
+        +mark_complete() void
+        +create_next_occurrence() Task
+        +priority_rank() int
+    }
+
+    class Schedule {
+        +Owner owner
+        +List~Task~ tasks
+        +List~str~ reasons
+        +sort_by_time() List~Task~
+        +filter_by_completion(completed) List~Task~
+        +add_task(task) void
+        +total_time() int
+        +build_plan(available_tasks) void
+        +detect_conflicts() List~str~
+        +explain() str
+        +display_schedule() void
+    }
+
+    Owner "1" --> "*" Pet : cares for
+    Pet "1" --> "*" Task : has
+    Schedule "1" --> "1" Owner : plans for
+    Schedule "1" --> "*" Task : contains
