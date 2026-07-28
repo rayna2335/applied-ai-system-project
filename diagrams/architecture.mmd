@@ -1,0 +1,31 @@
+flowchart TD
+
+    A[Pet Owner] --> B[PawPal+ Streamlit App]
+
+    B --> C[Pet Information]
+    B --> D[Care Tasks]
+    B --> E[Owner Constraints]
+
+    C --> F[AI Planning Agent]
+    D --> F
+    E --> F
+
+    F --> G[Task Analysis]
+    G --> H[Priority Planning]
+    H --> I[Generate 24-Hour Schedule]
+
+    I --> J[Schedule Evaluator]
+    J --> K{Schedule Valid?}
+
+    K -- No --> L[AI Revises Schedule]
+    L --> J
+
+    K -- Yes --> M[Final Schedule Output]
+
+    M --> N[24-Hour Schedule Table]
+
+    N --> O[Pet Owner Reviews Result]
+
+    P[Pytest Testing System] --> J
+
+    Q[Logging & Error Handling] --> F
