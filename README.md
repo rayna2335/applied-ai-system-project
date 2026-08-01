@@ -1,35 +1,33 @@
-# PawPal+ (Module 2 Project)
+# Pet Plan Scheduler (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+**PawPal+**  is a Streamlit app that helps a pet owner plan care tasks for their pet. The user just needs to add their availability, their pets, and tasks. This generates a simple schedule based on the owner's availability.
 
-## Scenario
+## Title and Summary
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+**Pet Plan Scheduler** allows pet owners to schedule/plan their tasks in organized time blocks within the 24hour timeline. It creates a 24-hour table to easily see the owner's schedule. Any tasks that wouldn't fit into the plan would be marked as a postponed list for low-priority tasks. This helps the pet owners to stay organized and utilize users' busy times to accomplish the tasks that need to be accomplished within the available time frame.
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+The pet owner can add pets, tasks for each of their pets, owners' availability, and priority for each task.
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
 
-## What you will build
-
-Your final app should:
+## Architecture Overview
 
 - Let a user enter basic owner + pet info
 - Let a user add/edit tasks (duration + priority at minimum)
 - Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
+- Display the plan clearly in a 24 hour timetable format
+- Also display other tasks that are postponed due to time constraints.
 - Include tests for the most important scheduling behaviors
 
 ## Getting started
 
-### Setup
+### Setup Instructions
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+pip install anthropic python-dotenv
+streamlit run app.py 
 ```
 
 ### Suggested workflow
@@ -42,17 +40,67 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
-## 🖥️ Sample Output
+## 🖥️ Sample Interactions
+1. Enter the owner's name in the sidebar (First Name \ Last Name)
+2. Enter the total amount of time you have during the day.
+3. Add your pets to the system. It will auto-populate the number of pets in the sidebar.
+4. Add care tasks for each of the pets you’ve entered. (Enter the name of the pet that will execute the plan, task title, duration, priority, and the time it will be executed).
+5. Click on ‘Generate Schedule’ to schedule out a plan in 24 hour time table.
+6. Anything that didn't fit into the schedule will go into the ‘Postponed’ task list.
+7. At the very bottom, you can ask AI some specific questions about the schedule.
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+## Example 1
+Input:
+Available time: 60 minutes
 
-```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
-```
+Tasks:
+Feed Cookie (10 min, High)
+Walk Cookie (30 min, High)
+Brush Cookie (20 min, Medium)
+
+Output: 
+8:00 Feed Cookie
+8:10 Walk Cookie
+8:40 Brush Cookie
+
+No postponed tasks.
+
+## Example 2
+Input:
+Available time: 30 minutes
+
+Output:
+Feed Cookie
+Walk postponed
+
+Reason:
+Not enough available time.
+
+## Example 3 with AI
+Input:
+Why wasn't brushing scheduled?
+
+Ouput:
+Brushing was postponed because there was not enough available time after scheduling higher-priority tasks.
+
+## Exmaple 4 with AI 
+Input:
+Why should Cookie the bunny go to a vet?
+
+Output:
+Based on the provided schedule data, I do not have information regarding why 'Cookie' needs to go to the vet. The log only shows that a 20-minute, high-priority task named 'Cookie' for visit a vet was added to Rayna Maruyama's schedule today at 12:00 PM.
+
+
+
+## Design Decisions
+I built it this way because I want to test out how the AI model will make decisions based on level of priority and give reasoning for how it's scheduled the way it did. I limited the AI assistant to answering questions only from the generated schedule (using RAG). This prevents the AI from inventing information, but it also means it cannot answer questions that are not contained in the schedule.
+
+## Testing Summary
+I was able to implement the AI feature in the application and the ability to answer questions from available data with responses based on the priority level and timing. One challenge that I encountered was using the Anthropic API. The implementation was correct, but the API returned an error stating that the account didn't have sufficient API credits. But we used the Gemini API to connect to the AI model. From this experience, I learned the importance of grounding AI responses in real app data to reduce hallucinations and improve reliability in those responses.
+
+
+## Reflection
+This project taught me that building an AI application involves more than connecting to a language model. I learned how to combine scheduling logic, retrieval, and guardrails to create reliable AI responses. Testing also showed the importance of validating outputs and handling errors gracefully.
 
 ## 🧪 Testing PawPal+
 
@@ -86,27 +134,11 @@ confidence level: 5
 '''
 ```
 
-Sample test output:
-
-```
-Today's Schedule
-----------------------------
-Daily plan for Cookie (Holland lop):
-  08:00 — Morning Walk (30 min) [priority: high]
-  09:00 — Feed Breakfast (10 min) [priority: high]
-  10:00 — Playtime (20 min) [priority: medium]
-  ```
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
 | Sorting | Schedule.sort_by_time() | Sorts tasks by HH:MM time
 | Filtering | Schedule.filter_by_pet() and Schedule.filter_by_completion() | Filters tasks by pet and tasks that are completed.
 | Conflict detection | Schedule.detect_conflicts() | Detects tasks scheduled at the same time.
@@ -170,11 +202,19 @@ Conflict: Feed Breakfast and Playtime both occur at 08:00
 
 
 
-#  3 core actions
 
-The User should be able to:
+## Reliability and evaluations (Human evaluations)
+Summary: I performed 4 tests that cover scheduling, AI responses, guardrails and error handeling. All 4 tests passed.
 
-1. add pet information (name, weight, age, owner, behavior)
-2. Track pets actions (feed time, walk schedule)
-3. Track owners schedule/plan
-4. add Pets health information (meds, appointments)
+| Test Inputs | Evaluation Criteria(s) | Results |
+|------------------------|-----------|--------------|
+| Schedule fits available time | No overflow | Pass |
+| Prioritization order | Complete higher priority tasks before medium or lower level | Pass |
+|AI only answers from scheduled daily plan | There are no hallucinations| Pass |
+| Empty question | Returns message | Pass |
+
+### Sample CLI output (`python3 main.py`)
+
+## Portfolio Reflection
+
+This project demonstrates my ability use Retrieval-Augmented Generation (RAG), prompt engineering, and guardrails. It also highlights the importance of testing, validation, and reliable AI system design. Through this project, I gained experience building an AI-assisted application that balances functionality, usability, and responsible AI practices.
