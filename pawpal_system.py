@@ -6,11 +6,9 @@ Class skeleton generated from diagrams/uml.mmd.
 Attributes are set up in each __init__; method bodies are left as stubs
 (marked with TODO) for you to implement.
 """
-from datetime import date, timedelta
-
 class Pet:
     def __init__(self, name, breed, weight, age, owner_name, on_medication):
-        """Initialize a pet with its details and default (all-false) status flags."""
+        """Initialize a pet with its details and an empty task list."""
         self.name = name
         self.breed = breed
         self.weight = weight
@@ -18,48 +16,18 @@ class Pet:
         self.owner_name = owner_name
         self.on_medication = on_medication
 
-        # current status
-        self.walking = False
-        self.eating = False
-        self.playing = False
-        self.medicine_taken = False
-        self.groomed = False
-
         # list of tasks for this pet
         self.tasks = []
-
-    def is_walking(self):
-        """Return True if the pet is currently walking."""
-        return self.walking
-
-    def is_eating(self):
-        """Return True if the pet is currently eating."""
-        return self.eating
-
-    def is_playing(self):
-        """Return True if the pet is currently playing."""
-        return self.playing
-
-    def took_medicine(self):
-        """Return True if the pet has taken its medicine."""
-        return self.medicine_taken
-
-    def is_groomed(self):
-        """Return True if the pet has been groomed."""
-        return self.groomed
 
     def add_task(self, task):
         """Tag the task with this pet's name and add it to the pet's task list."""
         task.pet_name = self.name
         self.tasks.append(task)
 
-    def filter_by_pet(self, pet_name):
-        """Return tasks belonging to one pet."""
-        return [
-            task
-            for task in self.tasks
-            if task.pet_name == pet_name
-        ]
+    def remove_task(self, task):
+        """Remove a specific task from this pet's task list."""
+        if task in self.tasks:
+            self.tasks.remove(task)
 
 class Owner:
     def __init__(self, first_name, last_name, available_minutes):
@@ -68,11 +36,6 @@ class Owner:
         self.last_name = last_name
         self.available_minutes = available_minutes
         self.pets = []
-
-    def is_available(self):
-        """Return True if the owner has any free minutes available."""
-        # Owner has time if they have any minutes free
-        return self.available_minutes > 0
 
     def add_pet(self, pet):
         """Add a pet to this owner's list of pets."""
@@ -139,6 +102,7 @@ class Schedule:
         self.owner = owner      # this plan covers all of the owner's pets
         self.tasks = []         # list of Task objects
         self.reasons = []       # notes on why each task was/wasn't added (for explain())
+        self.postponed = [] 
 
     def sort_by_time(self):
         """Return tasks sorted by HH:MM time."""
@@ -157,10 +121,6 @@ class Schedule:
     def add_task(self, task):
         """Add a task to this schedule."""
         self.tasks.append(task)
-
-    def total_time(self):
-        """Return the total duration in minutes of all scheduled tasks."""
-        return sum(task.duration for task in self.tasks)
 
     def build_plan(self, available_tasks):
         """Greedily fill the schedule with the highest-priority tasks that fit.
@@ -181,6 +141,7 @@ class Schedule:
         """
         self.tasks = []
         self.reasons = []
+        self.postponed = []
         used = 0
 
         for task in sorted(
@@ -196,6 +157,7 @@ class Schedule:
                     f"({task.priority} priority, {task.duration} min)."
                 )
             else:
+                self.postponed.append(task)
                 self.reasons.append(
                     f"Skipped '{task.name}' for {task.pet_name} — not enough time left."
                 )
@@ -234,16 +196,15 @@ class Schedule:
 
         return header + "\n" + "\n".join(lines)
 
-    def display_schedule(self):
-        """Print each scheduled task with its duration and priority."""
-        for task in self.tasks:
-            print(f"{task.name} ({task.duration} min) - {task.priority}")
+    def get_24hr_timetable(self):
+            """Return an ordered dict-like list of (hour_label, tasks_in_that_hour)
+            covering every hour 00:00 through 23:00, even hours with nothing scheduled.
+            """
+            timetable = {f"{h:02d}:00": [] for h in range(24)}
 
+            for task in self.tasks:
+                hour = task.time.split(":")[0]
+                slot = f"{int(hour):02d}:00"
+                timetable[slot].append(task)
 
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-
-#edge cases
-"""
-1. 
-"""
+            return timetable
