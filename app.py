@@ -95,7 +95,8 @@ with st.form("add_pet_form", clear_on_submit=True):
                 )
             )
             st.success(f"Added {pet_name} to your pets!")
-
+            st.rerun()
+            
 # Show the current pets
 if owner.pets:
     st.markdown("**Your pets:**")
@@ -117,57 +118,77 @@ st.header("Add care tasks")
 if not owner.pets:
     st.warning("Add a pet first before creating tasks.")
 else:
-    with st.form("add_task_form", clear_on_submit=True):
-        selected_pet_name = st.selectbox(
-            "Which pet is this task for?",
-            [pet.name for pet in owner.pets],
-        )
+    selected_pet_name = st.selectbox(
+        "Which pet is this task for?",
+        [pet.name for pet in owner.pets],
+    )
+    task_title = st.text_input("Task title", placeholder="e.g. Morning walk")
+    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20, step=5)
+    priority = st.selectbox("Priority", ["high", "medium", "low"])
 
-        col1, col2 = st.columns(2)
-        with col1:
-            task_title = st.text_input("Task title", placeholder="e.g. Morning walk")
-            task_time = st.time_input("Time")
-        with col2:
-            duration = st.number_input(
-                "Duration (minutes)", min_value=1, max_value=240, value=20
-            )
-            priority = st.selectbox("Priority", ["high", "medium", "low"])
+    def time_to_minutes(t):
+        h, m = map(int, t.split(":"))
+        return h * 60 + m
 
-        submitted_task = st.form_submit_button("Add task")
+    busy_ranges = []
+    for t in owner.get_all_tasks():
+        start = time_to_minutes(t.time)
+        end = start + t.duration
+        busy_ranges.append((start, end))
 
-        if submitted_task:
+    # Candidate start times every 15 minutes across the day
+    available_slots = []
+    for start in range(0, 24 * 60, 15):
+        end = start + int(duration)
+        if end > 24 * 60:
+            continue  # would run past midnight
+        overlaps = any(start < b_end and end > b_start for (b_start, b_end) in busy_ranges)
+        if not overlaps:
+            h, m = divmod(start, 60)
+            available_slots.append(f"{h:02d}:{m:02d}")
+
+    if not available_slots:
+        st.warning(f"No open slots fit a {duration}-minute task today — try a shorter duration.")
+    else:
+        task_time_str = st.selectbox("Time", available_slots)
+
+        if st.button("Add task"):
             if not task_title.strip():
                 st.error("Please enter a task title.")
             else:
-                selected_pet = next(
-                    pet for pet in owner.pets if pet.name == selected_pet_name
-                )
+                selected_pet = next(pet for pet in owner.pets if pet.name == selected_pet_name)
                 selected_pet.add_task(
                     Task(
                         name=task_title.strip(),
-                        time=task_time.strftime("%H:%M"),
+                        time=task_time_str,
                         duration=int(duration),
                         priority=priority,
                     )
                 )
                 st.success(f"Added '{task_title}' to {selected_pet_name}.")
+                st.rerun()
 
-    # Show all tasks across pets
+    # Show all tasks across pets, with delete buttons
     all_tasks = owner.get_all_tasks()
     if all_tasks:
         st.markdown("**All tasks:**")
-        st.table(
-            [
-                {
-                    "Pet": task.pet_name,
-                    "Time": task.time,
-                    "Task": task.name,
-                    "Duration": task.duration,
-                    "Priority": task.priority,
-                }
-                for task in all_tasks
-            ]
-        )
+
+        header_cols = st.columns([2, 2, 3, 2, 2, 1])
+        for col, label in zip(header_cols, ["Pet", "Time", "Task", "Duration", "Priority", ""]):
+            col.markdown(f"**{label}**")
+
+        for i, task in enumerate(all_tasks):
+            row_cols = st.columns([2, 2, 3, 2, 2, 1])
+            row_cols[0].write(task.pet_name)
+            row_cols[1].write(task.time)
+            row_cols[2].write(task.name)
+            row_cols[3].write(f"{task.duration} min")
+            row_cols[4].write(task.priority)
+
+            if row_cols[5].button("🗑️", key=f"delete_task_{i}_{task.name}_{task.time}"):
+                owning_pet = next(p for p in owner.pets if p.name == task.pet_name)
+                owning_pet.remove_task(task)
+                st.rerun()
 
         # --- Live running total of time used vs. available ---
         used = sum(task.duration for task in all_tasks)
@@ -207,6 +228,7 @@ if st.button("Generate schedule", type="primary"):
     else:
         schedule = Schedule(owner=owner)
         schedule.build_plan(owner.get_all_tasks())
+        st.session_state.schedule = schedule
 
         # Conflict warnings
         conflicts = schedule.detect_conflicts()
@@ -215,31 +237,76 @@ if st.button("Generate schedule", type="primary"):
                 st.warning(f"⚠️ {warning}")
         else:
             st.success("No scheduling conflicts detected.")
+            
+        # 24-hour timetable view
+        st.markdown("#### 🕐 24-Hour Timetable")
+        timetable = schedule.get_24hr_timetable()
 
-        # Sorted plan
-        sorted_tasks = schedule.sort_by_time()
-        if sorted_tasks:
-            st.success(
-                f"Planned {len(sorted_tasks)} task(s) using "
-                f"{schedule.total_time()} of {owner.available_minutes} available minutes."
-            )
-            st.markdown("#### 📅 Daily Plan (sorted by time)")
+        rows = []
+        for hour_label, tasks_in_hour in timetable.items():
+            if tasks_in_hour:
+                for task in tasks_in_hour:
+                    rows.append({
+                        "Hour": hour_label,
+                        "Task": task.name,
+                        "Pet": task.pet_name,
+                        "Duration (min)": str(task.duration),
+                        "Priority": task.priority,
+                    })
+            else:
+                rows.append({
+                    "Hour": hour_label,
+                    "Task": "—",
+                    "Pet": "",
+                    "Duration (min)": "",
+                    "Priority": "",
+                })
+
+        st.table(rows)
+
+        # Postponed tasks list
+        if schedule.postponed:
+            st.markdown("#### ⏸️ Postponed (didn't fit today)")
             st.table(
                 [
                     {
-                        "Time": task.time,
-                        "Task": task.name,
-                        "Pet": task.pet_name,
-                        "Duration (min)": task.duration,
-                        "Priority": task.priority,
+                        "Task": t.name,
+                        "Pet": t.pet_name,
+                        "Duration (min)": t.duration,
+                        "Priority": t.priority,
                     }
-                    for task in sorted_tasks
+                    for t in schedule.postponed
                 ]
             )
         else:
-            st.warning("No tasks could fit within the available time.")
+            st.caption("Nothing postponed — everything fit!")
 
         # Reasoning
         with st.expander("Why these tasks?"):
             for reason in schedule.reasons:
                 st.write(f"• {reason}")
+
+
+
+# ---------------------------------------------------------------------------
+# Step 5: Ask the AI about your schedule (RAG + guardrail)
+# ---------------------------------------------------------------------------
+st.divider()
+st.header("🤖 Ask PawPal+ about your schedule")
+st.caption("Ask a question about today's plan — answered using your actual schedule data.")
+
+question = st.text_input("Your question", placeholder="e.g. Why was grooming postponed?")
+
+if st.button("Ask"):
+    if "schedule" not in st.session_state:
+        st.warning("Generate a schedule first.")
+    else:
+        from ai_assistant import ask_schedule_question
+        result = ask_schedule_question(st.session_state.schedule, owner, question)
+
+        if result["warning"]:
+            st.error(f"⚠️ {result['warning']}")
+        if result["answer"]:
+            st.write(result["answer"])
+            if result["grounded"]:
+                st.caption("✅ Guardrail check: answer appears grounded in real schedule data.")
