@@ -5,7 +5,7 @@ from pawpal_system import Owner, Pet, Schedule, Task
 owner = Owner(
     first_name="Rayna",
     last_name="Maruyama",
-    available_minutes=120
+    available_minutes=20
 )
 
 pet1 = Pet(
@@ -86,7 +86,9 @@ if next_task:
         f"Created recurring task: "
         f"{next_task.name} at {next_task.time}"
     )
-
+print("\nPostponed tasks:")
+for task in schedule.postponed:
+    print(f"  {task.name} ({task.pet_name}) — {task.duration} min")
 
 
 print("\nConflict Detection:")
