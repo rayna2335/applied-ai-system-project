@@ -2,30 +2,47 @@ flowchart TD
 
     A[Pet Owner] --> B[PawPal+ Streamlit App]
 
-    B --> C[Pet Information]
-    B --> D[Care Tasks]
-    B --> E[Owner Constraints]
+    B --> C[Owner Information]
+    B --> D[Pet Information]
+    B --> E[Care Tasks]
+    B --> F[Available Time Constraints]
 
-    C --> F[AI Planning Agent]
-    D --> F
-    E --> F
+    C --> G[Scheduling Engine]
+    D --> G
+    E --> G
+    F --> G
 
-    F --> G[Task Analysis]
-    G --> H[Priority Planning]
-    H --> I[Generate 24-Hour Schedule]
+    G --> H[Task Prioritization]
+    H --> I[Schedule Generation]
 
-    I --> J[Schedule Evaluator]
-    J --> K{Schedule Valid?}
+    I --> J{Tasks Fit Available Time?}
 
-    K -- No --> L[AI Revises Schedule]
-    L --> J
+    J -- Yes --> K[Create Daily Schedule]
+    J -- No --> L[Move Tasks to Postponed List]
 
-    K -- Yes --> M[Final Schedule Output]
+    K --> M[24-Hour Schedule Table]
+    L --> M
 
-    M --> N[24-Hour Schedule Table]
+    M --> N[Schedule Reasons Log]
 
-    N --> O[Pet Owner Reviews Result]
+    M --> O[RAG AI Assistant]
 
-    P[Pytest Testing System] --> J
+    N --> O
 
-    Q[Logging & Error Handling] --> F
+    O --> P[Retrieve Schedule Context]
+    P --> Q[AI Question Answering]
+
+    Q --> R[Guardrail Validation]
+
+    R --> S{Response Grounded in Schedule?}
+
+    S -- Yes --> T[Display AI Response]
+    S -- No --> U[Return Warning / No Answer]
+
+    T --> V[Pet Owner Reviews Schedule]
+
+    W[Pytest Automated Tests] --> G
+    W --> R
+
+    X[Error Handling & Logging] --> O
+    X --> G
